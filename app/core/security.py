@@ -30,4 +30,4 @@ def decode_access_token(token: str) -> dict:
                              algorithms=[settings.jwt_alg])
         return payload
     except JWTError:
-        raise ValueError('Invalid token!')
+        raise ValueError('Некорректный JWT-токен.')
