@@ -23,7 +23,7 @@ class ChatMessageRepository:
         messages = result.scalars().all()
         return list(messages)
 
-    async def delete_all_for_user(self, user_id: int) -> None:
+    async def delete_history(self, user_id: int) -> None:
         await self._session.execute(delete(ChatMessage)
                                     .where(ChatMessage.user_id == user_id))
         await self._session.commit()
