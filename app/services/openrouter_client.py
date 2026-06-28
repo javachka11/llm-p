@@ -12,14 +12,16 @@ class OpenRouterClient:
         self._site_url = settings.openrouter_site_url
         self._app_name = settings.openrouter_app_name
 
-    async def chat_completion(self, messages: list[dict]) -> str:
+    async def chat_completion(self, messages: list[dict],
+                              temperature: float = 0.7) -> str:
         headers = {'Authorization': f'Bearer {self._api_key}',
                    'HTTP-Referer': self._site_url,
                    'X-Title': self._app_name,
                    'Content-Type': 'application/json'}
         
         payload = {'model': self._model,
-                   'messages': messages}
+                   'messages': messages,
+                   'temperature': temperature}
         
         async with httpx.AsyncClient() as client:
             try:
