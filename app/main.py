@@ -1,11 +1,25 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 from app.core.config import settings
+from app.db.base import Base
+from app.db.session import engine
+from app.api.routes_auth import router as auth_router
+from app.api.routes_chat import router as chat_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    await engine.dispose()
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title=settings.app_name)
+    app = FastAPI(title=settings.app_name,
+                  lifespan=lifespan)
 
     app.add_middleware(CORSMiddleware,
                        allow_origins=['*'],
@@ -17,6 +31,9 @@ def create_app() -> FastAPI:
     async def check_health():
         return {'status': 'healthy',
                 'environment': settings.env}
+    
+    app.include_router(auth_router, prefix='/auth', tags=['auth'])
+    app.include_router(chat_router, prefix='/chat', tags=['chat'])
 
     return app
 
