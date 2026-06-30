@@ -32,9 +32,10 @@ class ChatUseCase:
             messages.append({'role': msg.role, 'content': msg.content})
 
         messages.append({'role': 'user', 'content': prompt})
-        await self._chat_repo.add_message(user_id, 'user', prompt)
 
         answer = await self._llm_client.chat_completion(messages, temperature)
+        
+        await self._chat_repo.add_message(user_id, 'user', prompt)
         await self._chat_repo.add_message(user_id, 'assistant', answer)
 
         return answer
