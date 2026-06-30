@@ -5,10 +5,18 @@ from app.schemas.user import UserPublic
 
 
 class AuthUseCase:
+    """
+    Бизнес-логика аутентификации: регистрация, вход и получение профиля.
+    """
+
     def __init__(self, user_repo: UserRepository):
         self._user_repo = user_repo
 
     async def register(self, email: str, password: str) -> UserPublic:
+        """
+        Регистрация нового пользователя.
+        """
+        
         existing_user = await self._user_repo.get_by_email(email)
         if existing_user:
             raise ConflictError(f'Пользователь {email} уже зарегистрирован.')
@@ -17,7 +25,12 @@ class AuthUseCase:
         user = await self._user_repo.create(email, password_hash)
         return UserPublic.model_validate(user)
 
+
     async def login(self, email: str, password: str) -> str:
+        """
+        Аутентификация пользователя с получением JWT-токена.
+        """
+
         user = await self._user_repo.get_by_email(email)
         if not user:
             raise UnauthorizedError(f'Пользователя {email} не существует.')
@@ -27,9 +40,14 @@ class AuthUseCase:
 
         return create_access_token(user.id, user.role)
 
+
     async def get_profile(self, user_id: int) -> UserPublic:
+        """
+        Получение профиля пользователя по его id.
+        """
+        
         user = await self._user_repo.get_by_id(user_id)
         if not user:
-            raise NotFoundError(f'Пользователь не найден.')
+            raise NotFoundError('Пользователь не найден.')
 
         return UserPublic.model_validate(user)

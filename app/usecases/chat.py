@@ -3,6 +3,10 @@ from app.services.openrouter_client import OpenRouterClient
 
 
 class ChatUseCase:
+    """
+    Бизнес-логика общения с LLM: отправка запросов и управление историей.
+    """
+
     def __init__(self,
                  chat_repo: ChatMessageRepository,
                  llm_client: OpenRouterClient):
@@ -11,13 +15,17 @@ class ChatUseCase:
 
 
     async def ask(self, user_id: int, prompt: str,
-                  system_info: str | None = None,
+                  system: str | None = None,
                   max_history: int = 10,
                   temperature: float = 0.7) -> str:
+        """
+        Отправка запроса в LLM с учетом системной инструкции и истории диалога.
+        """
+
         messages = []
 
-        if system_info:
-            messages.append({'role': 'system', 'content': system_info})
+        if system:
+            messages.append({'role': 'system', 'content': system})
 
         history = await self._chat_repo.get_last_messages(user_id, max_history)
         for msg in history:
@@ -31,12 +39,22 @@ class ChatUseCase:
 
         return answer
 
-    async def get_history(self, user_id: int, max_history: int = 50) -> list[dict]:
-        messages = await self._chat_repo.get_last_messages(user_id, max_history)
-        return [
-            {"role": msg.role, "content": msg.content, "created_at": msg.created_at}
-            for msg in messages
-        ]
+
+    async def get_history(self, user_id: int, n: int = 10) -> list[dict]:
+        """
+        Получение истории сообщений пользователя.
+        """
+
+        messages = await self._chat_repo.get_last_messages(user_id, n)
+        return [{'role': msg.role,
+                 'content': msg.content,
+                 'created_at': msg.created_at}
+                for msg in messages]
+
 
     async def clear_history(self, user_id: int) -> None:
+        """
+        Очищение истории сообщений пользователя.
+        """
+        
         await self._chat_repo.delete_messages(user_id)

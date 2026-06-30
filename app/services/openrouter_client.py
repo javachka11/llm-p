@@ -1,10 +1,15 @@
 import httpx
+from typing import Any
 
 from app.core.config import settings
 from app.core.errors import ExternalServiceError
 
 
 class OpenRouterClient:
+    """
+    Клиент для взаимодействия с OpenRouter API.
+    """
+
     def __init__(self):
         self._api_key = settings.openrouter_api_key
         self._base_url = settings.openrouter_base_url
@@ -12,8 +17,12 @@ class OpenRouterClient:
         self._site_url = settings.openrouter_site_url
         self._app_name = settings.openrouter_app_name
 
-    async def chat_completion(self, messages: list[dict],
+    async def chat_completion(self, messages: list[dict[str, Any]],
                               temperature: float = 0.7) -> str:
+        """
+        Отправка запроса в OpenRouter.
+        """
+
         headers = {'Authorization': f'Bearer {self._api_key}',
                    'HTTP-Referer': self._site_url,
                    'X-Title': self._app_name,

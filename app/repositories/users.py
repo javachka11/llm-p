@@ -5,18 +5,37 @@ from app.db.models import User
 
 
 class UserRepository:
+    """
+    Репозиторий для таблицы `users`.
+    """
+
     def __init__(self, session: AsyncSession):
         self._session = session
 
+
     async def get_by_email(self, email: str) -> User | None:
+        """
+        Получение пользователя по email или None, если он не найден.
+        """
+
         result = await self._session.execute(select(User).where(User.email == email))
         return result.scalar_one_or_none()
 
+
     async def get_by_id(self, user_id: int) -> User | None:
+        """
+        Получение пользователя по id или None, если он не найден.
+        """
+
         result = await self._session.execute(select(User).where(User.id == user_id))
         return result.scalar_one_or_none()
 
+
     async def create(self, email: str, password_hash: str, role: str = 'user') -> User:
+        """
+        Создание нового пользователя.
+        """
+
         user = User(email=email, password_hash=password_hash, role=role)
         self._session.add(user)
         await self._session.commit()
